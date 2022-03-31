@@ -1,0 +1,26 @@
+{
+    "id": "mhdzumair.addons.tamilyogi.best",
+    "version": "1.0.0",
+    "name": "Tamil Yogi",
+    "description" : "TamilYogi add-on for watch tamil movies & tamil dubbed movies",
+    "logo": "https://www.stremio.com/website/stremio-logo-small.png",
+    "resources": [
+        "catalog",
+        {
+            "name": "stream",
+            "types": ["movie"],
+            "idPrefixes": ["tt", "ty"]
+        },
+        {
+            "name": "meta",
+            "types": ["movie"],
+            "idPrefixes": ["ty"]
+        }
+    ],
+    "types": ["movies"],
+    "catalogs": [
+        {"id": "tamil_new", "type": "movie", "name": "Tamil New Movie"},
+        {"id": "tamil_hd", "type": "movie", "name": "Tamil HD Movie"},
+        {"id": "tamil_dubbed", "type": "movie", "name": "Tamil Dubbed Movie"}
+    ]
+}

@@ -1,2 +1,2 @@
-# tamilyogi_streamio_addon
-Streamio Addon for TamilYogi Movies.
+# TamilYogi Streamio Addon
+Streamio Addon Scrapper for TamilYogi Movies.
