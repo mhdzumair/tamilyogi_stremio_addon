@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+
+import argparse
+import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
-from sys import argv
+from urllib import parse
 from uuid import uuid4
 
 import requests
@@ -11,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 import utils
 from database import SessionLocal
 
-ia = Cinemagoer()
+ia = Cinemagoer(loggingLevel=logging.INFO)
 
 tamil_yogi_urls = {
     "tamil_hd": "http://tamilyogi.best/category/tamilyogi-bluray-movies/",
@@ -53,13 +57,20 @@ def parse_movie(movie):
     else:
         imdb_id = f"tt{imdb_id}"
 
+    data = re.search(r"^(.+\(\d{4}\))", movie.a.get('title'))
+    try:
+        name = data[1].strip()
+    except TypeError:
+        name = movie.a.get('title')
+
+    logging.info(f"parsed movie data: {name}")
+
     return {
-        "name": movie.a.get('title'),
+        "name": name,
         "imdb_id": imdb_id,
         "tamilyogi_id": tamilyogi_id,
         "link": movie.a.get('href'),
-        "poster": f"https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Ftamilyogi.best/"
-                  f"{movie.a.img.get('src').lstrip('http://tamilyogi.best')}&f=1&nofb=1"
+        "poster": f"https://external-content.duckduckgo.com/iu/?u={parse.quote_plus(movie.a.img.get('src'))}&f=1&nofb=1"
     }
 
 
@@ -89,14 +100,7 @@ def scrap_stream(movie_url):
 
 
 def scrap_movies(catalog, url=None):
-    if url is None:
-        url = tamil_yogi_urls.get(catalog)
     movie_table = utils.get_movie_table(catalog)
-    db = SessionLocal()
-
-    if url is None:
-        return {"message": "No movie catalog found"}
-
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     movies_list = soup.find('ul', id='loop').find_all('li')
@@ -118,15 +122,17 @@ def get_movie_rating(movie_id):
     return movie.get("rating")
 
 
-def pull_all_movies_data():
-    movie_catalogs_data = [["tamil_hd", 50], ["tamil_new", 40], ["tamil_dubbed", 65]]
-    for catalog, max_page in movie_catalogs_data:
-        for page in range(max_page, 0, -1):
-            print(f"scraping {catalog} page: {page}")
-            link = f"{tamil_yogi_urls[catalog]}/page/{page}/"
-            scrap_movies(catalog, link)
-
-
 if __name__ == '__main__':
-    catalog_data = argv[1]
-    scrap_movies(catalog_data)
+    parser = argparse.ArgumentParser(description="Scrap Movie metadata from TamilYogi")
+    parser.add_argument("-c", "--movie-catalog", help="scrap movie catalog", default="tamil_hd")
+    parser.add_argument("-p", "--pages", type=int, default=1, help="number of scrap pages")
+    args = parser.parse_args()
+
+    logging.basicConfig(format='%(levelname)s::%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S',
+                        level=logging.INFO)
+    db = SessionLocal()
+
+    for page in range(args.pages, 0, -1):
+        logging.info(f"scraping {args.movie_catalog} page: {page}")
+        link = f"{tamil_yogi_urls[args.movie_catalog]}/page/{page}/"
+        scrap_movies(args.movie_catalog, link)
