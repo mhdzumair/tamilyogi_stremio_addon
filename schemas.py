@@ -25,7 +25,7 @@ class Movie(BaseModel):
 
 class Stream(BaseModel):
     title: str
-    url: str
+    externalUrl: str
     behaviorHints: dict
 
 
