@@ -27,5 +27,10 @@ Accept: application/json
 
 ###
 
+GET http://127.0.0.1:8000/stream/movie/ty59908866309236.json
+Accept: application/json
+
+###
+
 GET http://127.0.0.1:8000/meta/movie/ty219661034922033.json
 Accept: application/json
