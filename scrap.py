@@ -95,6 +95,7 @@ def scrap_stream(movie_url):
         stream_data.append({
             "title": link.text,
             "url": link.get("href"),
+            "behaviorHints": {"notWebReady": True}
         })
     return stream_data
 
