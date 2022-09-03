@@ -4,7 +4,7 @@
     "name": "Tamil Yogi",
     "contactEmail": "mhdzumair@gmail",
     "description" : "TamilYogi add-on for watch tamil movies & tamil dubbed movies. Created by Mohamed Zumair",
-    "logo": "https://streamio-addon-tamilyogi.herokuapp.com/static/tamilyogi.png",
+    "logo": "https://tamilyogi-addon.vercel.app/static/tamilyogi.png",
     "resources": [
         "catalog",
         {

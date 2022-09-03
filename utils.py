@@ -1,61 +1,43 @@
-from sqlalchemy.orm import Session
+from typing import Optional
 
-import models
 import schemas
 import scrap
+from models import TamilYogiMovie
 
 
-def get_movie_table(catalog) -> models.TamilYogiMovie | None:
-    movie_table = None
-    if catalog == "tamil_hd":
-        movie_table = models.TamilHDMovie
-    elif catalog == "tamil_new":
-        movie_table = models.TamilNewMovie
-    elif catalog == "tamil_dubbed":
-        movie_table = models.TamilDubbedMovie
-
-    return movie_table
-
-
-def get_movies_meta(db: Session, catalog: str, skip: int = 0, limit: int = 25):
+async def get_movies_meta(catalog: str, skip: int = 0, limit: int = 25):
     movies_meta = []
-    movie_table = get_movie_table(catalog)
-    if movie_table is None:
-        return movies_meta
 
-    for movie in db.query(movie_table).order_by(movie_table.id.desc()).offset(skip).limit(limit).all():
-        meta_data = schemas.Meta.from_orm(movie)
+    movies = await TamilYogiMovie.find(TamilYogiMovie.catalog == catalog).sort("-created_at").skip(skip).limit(
+            limit).to_list()
+
+    for movie in movies:
+        meta_data = schemas.Meta.parse_obj(movie)
         meta_data.id = movie.imdb_id if movie.imdb_id else movie.tamilyogi_id
         movies_meta.append(meta_data)
     return movies_meta
 
 
-def get_movie_data(db: Session, video_id: str) -> models.TamilYogiMovie | None:
-    priority_table = [models.TamilHDMovie, models.TamilNewMovie, models.TamilDubbedMovie]
-    for movie_table in priority_table:
-        if video_id.startswith("tt"):
-            movie_data = db.query(movie_table).filter(movie_table.imdb_id == video_id).order_by(
-                movie_table.created_at.desc()
-            ).first()
-        else:
-            movie_data = db.query(movie_table).filter(movie_table.tamilyogi_id == video_id).order_by(
-                movie_table.created_at.desc()
-            ).first()
+async def get_movie_data(video_id: str) -> Optional[TamilYogiMovie]:
+    if video_id.startswith("tt"):
+        movie_data = await TamilYogiMovie.find_one(TamilYogiMovie.imdb_id == video_id)
+    else:
+        movie_data = await TamilYogiMovie.find_one(TamilYogiMovie.tamilyogi_id == video_id)
 
-        if movie_data:
-            return movie_data
+    if movie_data:
+        return movie_data
 
 
-def get_movie_streams(db: Session, video_id: str):
-    movie_data = get_movie_data(db, video_id)
+async def get_movie_streams(video_id: str):
+    movie_data = await get_movie_data(video_id)
     if not movie_data:
         return []
 
     return scrap.scrap_stream(movie_data.link)
 
 
-def get_movie_meta(db: Session, meta_id: str):
-    movie_data = get_movie_data(db, meta_id)
+async def get_movie_meta(meta_id: str):
+    movie_data = await get_movie_data(meta_id)
     if not movie_data:
         return
 

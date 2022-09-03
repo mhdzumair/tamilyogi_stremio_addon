@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,17 +10,14 @@ class Catalog(BaseModel):
 
 
 class Meta(BaseModel):
-    id: str
+    id: Any
     name: str
     type: str = Field(default="movie")
     poster: str
 
-    class Config:
-        orm_mode = True
-
 
 class Movie(BaseModel):
-    metas: List[Meta] | list = []
+    metas: Optional[List[Meta]] = []
 
 
 class Stream(BaseModel):
@@ -30,4 +27,4 @@ class Stream(BaseModel):
 
 
 class Streams(BaseModel):
-    streams: List[Stream] | list = []
+    streams: Optional[List[Stream]] = []

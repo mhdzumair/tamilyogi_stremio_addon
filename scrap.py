@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import asyncio
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
@@ -10,10 +11,10 @@ from uuid import uuid4
 import requests
 from bs4 import BeautifulSoup
 from imdb import Cinemagoer
-from sqlalchemy.exc import IntegrityError
+from pymongo.errors import DuplicateKeyError
 
-import utils
-from database import SessionLocal
+import database
+import models
 
 ia = Cinemagoer(loggingLevel=logging.INFO)
 
@@ -100,8 +101,7 @@ def scrap_stream(movie_url):
     return stream_data
 
 
-def scrap_movies(catalog, url=None):
-    movie_table = utils.get_movie_table(catalog)
+async def scrap_movies(catalog, url=None):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     movies_list = soup.find('ul', id='loop').find_all('li')
@@ -111,16 +111,25 @@ def scrap_movies(catalog, url=None):
     for movie_data in reversed(list(result)):
         if movie_data is None:
             continue
+        movie_data.update({"catalog": catalog})
+        new_data = models.TamilYogiMovie.parse_obj(movie_data)
         try:
-            db.add(movie_table(**movie_data))
-            db.commit()
-        except IntegrityError:
-            db.rollback()
+            await new_data.insert()
+        except DuplicateKeyError:
+            pass
 
 
 def get_movie_rating(movie_id):
     movie = ia.get_movie(movie_id)
     return movie.get("rating")
+
+
+async def run_scrape(catalog, pages):
+    await database.init()
+    for page in range(pages, 0, -1):
+        logging.info(f"scraping {catalog} page: {page}")
+        link = f"{tamil_yogi_urls[catalog]}/page/{page}/"
+        await scrap_movies(catalog, link)
 
 
 if __name__ == '__main__':
@@ -131,9 +140,5 @@ if __name__ == '__main__':
 
     logging.basicConfig(format='%(levelname)s::%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S',
                         level=logging.INFO)
-    db = SessionLocal()
 
-    for page in range(args.pages, 0, -1):
-        logging.info(f"scraping {args.movie_catalog} page: {page}")
-        link = f"{tamil_yogi_urls[args.movie_catalog]}/page/{page}/"
-        scrap_movies(args.movie_catalog, link)
+    asyncio.run(run_scrape(args.movie_catalog, args.pages))

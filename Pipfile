@@ -10,12 +10,13 @@ pydantic = "*"
 requests = "*"
 beautifulsoup4 = "*"
 cinemagoer = "*"
-sqlalchemy = "*"
-alembic = "*"
-psycopg2-binary = "*"
 gunicorn = "*"
+beanie = "*"
+motor = "*"
+pymongo = {extras = ["srv"], version = "*"}
+dnspython = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.9"
