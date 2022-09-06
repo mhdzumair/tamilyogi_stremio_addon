@@ -27,6 +27,7 @@ with open("manifest.json") as file:
     manifest = json.load(file)
 
 
+@app.on_event("startup")
 async def init_db():
     await database.init()
 
@@ -50,7 +51,7 @@ async def get_manifest():
 
 @app.get("/catalog/movie/{catalog_id}.json", response_model=schemas.Movie)
 @app.get("/catalog/movie/{catalog_id}/skip={skip}.json", response_model=schemas.Movie)
-async def get_catalog(catalog_id: str, skip: int = 0, _=Depends(init_db)):
+async def get_catalog(catalog_id: str, skip: int = 0):
     try:
         movies = schemas.Movie()
         movies.metas.extend(await utils.get_movies_meta(catalog_id, skip))
@@ -61,12 +62,12 @@ async def get_catalog(catalog_id: str, skip: int = 0, _=Depends(init_db)):
 
 
 @app.get("/meta/movie/{meta_id}.json")
-async def get_meta(meta_id: str, _=Depends(init_db)):
+async def get_meta(meta_id: str):
     return await utils.get_movie_meta(meta_id)
 
 
 @app.get("/stream/movie/{video_id}.json", response_model=schemas.Streams)
-async def get_stream(video_id: str, _=Depends(init_db)):
+async def get_stream(video_id: str):
     streams = schemas.Streams()
     streams.streams.extend(await utils.get_movie_streams(video_id))
     return streams
