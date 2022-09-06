@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,7 +16,7 @@ TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "resources"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://app.strem.io"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,7 +46,9 @@ async def get_home(request: Request):
 
 @app.get("/manifest.json")
 async def get_manifest():
-    return manifest
+    return Response(content=json.dumps(manifest), headers={
+        "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
+    })
 
 
 @app.get("/catalog/movie/{catalog_id}.json", response_model=schemas.Movie)
