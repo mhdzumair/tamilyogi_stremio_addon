@@ -27,16 +27,6 @@ async def init_db():
     await database.init()
 
 
-@app.get("/")
-async def get_info():
-    return {
-        "description": manifest.get("description"),
-        "github": "https://github.com/mhdzumair/tamilyogi_stremio_addon",
-        "created_by": "Mohamed Zumair",
-        "version": manifest.get("version")
-    }
-
-
 @app.get("/manifest.json")
 async def get_manifest():
     return manifest
