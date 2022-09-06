@@ -16,7 +16,7 @@ TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "resources"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://app.strem.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
