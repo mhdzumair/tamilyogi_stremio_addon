@@ -9,7 +9,7 @@ This scrapper is written in python and serves API for [stremio](https://www.stre
 ## Installation
 1. You can search on the third-party addon page as "Tamil Yogi"  
 
-2. enter this link in stremio search bar to install: https://tamilyogi-addon.vercel.app/manifest.json
+2. enter this link in stremio search bar to install: https://882b9915d0fe-stremio-tamilyogi.baby-beamup.club/manifest.json
 
 
 ## Limitations  
