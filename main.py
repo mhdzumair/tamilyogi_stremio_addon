@@ -51,9 +51,13 @@ async def get_manifest():
 @app.get("/catalog/movie/{catalog_id}.json", response_model=schemas.Movie)
 @app.get("/catalog/movie/{catalog_id}/skip={skip}.json", response_model=schemas.Movie)
 async def get_catalog(catalog_id: str, skip: int = 0, _=Depends(init_db)):
-    movies = schemas.Movie()
-    movies.metas.extend(await utils.get_movies_meta(catalog_id, skip))
-    return movies
+    try:
+        movies = schemas.Movie()
+        movies.metas.extend(await utils.get_movies_meta(catalog_id, skip))
+        return movies
+    except Exception as e:
+        print(e)
+        return {"error": str(e)}
 
 
 @app.get("/meta/movie/{meta_id}.json")
