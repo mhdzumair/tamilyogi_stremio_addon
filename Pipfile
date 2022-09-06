@@ -15,8 +15,9 @@ beanie = "*"
 motor = "*"
 pymongo = {extras = ["srv"], version = "*"}
 dnspython = "*"
+jinja2 = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"

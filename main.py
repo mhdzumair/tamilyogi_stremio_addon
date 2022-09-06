@@ -1,14 +1,18 @@
 import json
+from pathlib import Path
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 import database
 import schemas
 import utils
 
 app = FastAPI()
+BASE_PATH = Path(__file__).resolve().parent
+TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "resources"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +29,18 @@ with open("manifest.json") as file:
 
 async def init_db():
     await database.init()
+
+
+@app.get("/")
+async def get_home(request: Request):
+    return TEMPLATES.TemplateResponse(
+        "home.html",
+        {
+            "request": request, "name": manifest.get("name"), "version": manifest.get("version"),
+            "description": manifest.get("description"), "gives": ["Tamil Movies", "Tamil Dubbed Movies"],
+            "logo": "static/tamilyogi.png"
+        },
+    )
 
 
 @app.get("/manifest.json")
