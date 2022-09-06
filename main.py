@@ -45,31 +45,37 @@ async def get_home(request: Request):
 
 
 @app.get("/manifest.json")
-async def get_manifest():
-    return Response(content=json.dumps(manifest), headers={
-        "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
+async def get_manifest(response: Response):
+    response.headers.update({
+        "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
     })
+    return manifest
 
 
 @app.get("/catalog/movie/{catalog_id}.json", response_model=schemas.Movie)
 @app.get("/catalog/movie/{catalog_id}/skip={skip}.json", response_model=schemas.Movie)
-async def get_catalog(catalog_id: str, skip: int = 0):
-    try:
-        movies = schemas.Movie()
-        movies.metas.extend(await utils.get_movies_meta(catalog_id, skip))
-        return movies
-    except Exception as e:
-        print(e)
-        return {"error": str(e)}
+async def get_catalog(response: Response, catalog_id: str, skip: int = 0):
+    response.headers.update({
+        "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
+    })
+    movies = schemas.Movie()
+    movies.metas.extend(await utils.get_movies_meta(catalog_id, skip))
+    return movies
 
 
 @app.get("/meta/movie/{meta_id}.json")
-async def get_meta(meta_id: str):
+async def get_meta(meta_id: str, response: Response):
+    response.headers.update({
+        "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
+    })
     return await utils.get_movie_meta(meta_id)
 
 
 @app.get("/stream/movie/{video_id}.json", response_model=schemas.Streams)
-async def get_stream(video_id: str):
+async def get_stream(video_id: str, response: Response):
+    response.headers.update({
+        "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"
+    })
     streams = schemas.Streams()
     streams.streams.extend(await utils.get_movie_streams(video_id))
     return streams
