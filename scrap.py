@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from urllib import parse
@@ -16,7 +15,7 @@ from pymongo.errors import DuplicateKeyError
 import database
 import models
 
-ia = Cinemagoer(loggingLevel=logging.INFO)
+ia = Cinemagoer()
 
 tamil_yogi_urls = {
     "tamil_hd": "http://tamilyogi.best/category/tamilyogi-bluray-movies/",
@@ -64,7 +63,7 @@ def parse_movie(movie):
     except TypeError:
         name = movie.a.get('title')
 
-    logging.info(f"parsed movie data: {name}")
+    print(f"parsed movie data: {name}")
 
     return {
         "name": name,
@@ -127,7 +126,7 @@ def get_movie_rating(movie_id):
 async def run_scrape(catalog, pages):
     await database.init()
     for page in range(pages, 0, -1):
-        logging.info(f"scraping {catalog} page: {page}")
+        print(f"scraping {catalog} page: {page}")
         link = f"{tamil_yogi_urls[catalog]}/page/{page}/"
         await scrap_movies(catalog, link)
 
@@ -137,8 +136,5 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--movie-catalog", help="scrap movie catalog", default="tamil_hd")
     parser.add_argument("-p", "--pages", type=int, default=1, help="number of scrap pages")
     args = parser.parse_args()
-
-    logging.basicConfig(format='%(levelname)s::%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S',
-                        level=logging.INFO)
 
     asyncio.run(run_scrape(args.movie_catalog, args.pages))
