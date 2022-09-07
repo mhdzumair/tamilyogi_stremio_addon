@@ -17,3 +17,13 @@ This scrapper is written in python and serves API for [stremio](https://www.stre
 - Now the link is set as external. when you click on the movie stream, then you can download the full movie from an external download manager or browser.
 
 NOTE: This is Addon only functioning on mobile devices due to stremio limitation. or you may need to spoof the requests Agent in a web browser. 
+
+
+# References
+- [Stremio Generic Add-on Guide](https://stremio.github.io/stremio-addon-guide/basics)
+- [Stremio Add-on SDK API docs](https://github.com/Stremio/stremio-addon-sdk/tree/master/docs/api)
+- [Deploy Stremio Addon](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/deploying/beamup.md)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [beautifulsoup4](https://beautiful-soup-4.readthedocs.io/en/latest/)
+- [cinemagoer](https://cinemagoer.readthedocs.io/en/latest/)
+- [beanie](https://roman-right.github.io/beanie/)
