@@ -1,15 +1,16 @@
+# Disclaimer :warning: :warning: :warning:
+>The contents of these scripts and files are created for Educational Purpose. Use of the Add-on is at your own risk. 
+This scrapper is written in python and serves API for [stremio](https://www.stremio.com/). 
+All the credits goes to TamilYogi. 
+
 ![alt tamilyogi](resources/tamilyogi.png?raw=true)
 # TamilYogi Stremio Addon
 Stremio Addon for TamilYogi Movies.
 
-## Introduction
-This scrapper is written in python and serves API for [stremio](https://www.stremio.com/).
-![alt tamilyogi](resources/ss.png?raw=true)
-
 ## Installation
-1. You can search on the third-party addon page as "Tamil Yogi"  
-
-2. enter this link in stremio search bar to install: https://882b9915d0fe-stremio-tamilyogi.baby-beamup.club/manifest.json
+1. Install from home page: https://882b9915d0fe-stremio-tamilyogi.baby-beamup.club
+2. You can search on the third-party addon page as "Tamil Yogi"
+3. enter this link in stremio search bar to install: https://882b9915d0fe-stremio-tamilyogi.baby-beamup.club/manifest.json
 
 
 ## Limitations  
