@@ -109,7 +109,16 @@ def scrap_stream_v2(movie_url):
         return stream_data
 
     for link in download_links:
-        stream_data.append({"title": link.text, "url": link.get("href"), "behaviorHints": {"notWebReady": True}})
+        stream_data.append(
+            {
+                "title": link.text,
+                "url": link.get("href"),
+                "behaviorHints": {
+                    "notWebReady": True,
+                    "proxyHeaders": {"request": request_headers},
+                },
+            }
+        )
     return stream_data
 
 
@@ -155,7 +164,16 @@ def scrap_stream(movie_url):
         return stream_data
 
     for link in download_links:
-        stream_data.append({"title": link.text, "url": link.get("href"), "behaviorHints": {"notWebReady": True}})
+        stream_data.append(
+            {
+                "title": link.text,
+                "url": link.get("href"),
+                "behaviorHints": {
+                    "notWebReady": True,
+                    "proxyHeaders": {"request": request_headers},
+                },
+            }
+        )
     return stream_data
 
 
