@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import re
 from concurrent.futures import ThreadPoolExecutor
-from urllib import parse
+from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
@@ -18,9 +18,14 @@ import models
 ia = Cinemagoer()
 
 tamil_yogi_urls = {
-    "tamil_hd": "http://tamilyogi.best/category/tamilyogi-bluray-movies/",
-    "tamil_new": "http://tamilyogi.best/category/tamilyogi-full-movie-online/",
-    "tamil_dubbed": "http://tamilyogi.best/category/tamilyogi-dubbed-movies-online/"
+    "tamil_hd": "https://tamilyogi.love/category/tamilyogi-bluray-movies/",
+    "tamil_new": "https://tamilyogi.love/category/tamilyogi-full-movie-online/",
+    "tamil_dubbed": "https://tamilyogi.love/category/tamilyogi-dubbed-movies-online/",
+}
+
+request_headers = {
+    "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/90.0.4430.91 Mobile Safari/537.36"
 }
 
 
@@ -50,18 +55,18 @@ def parse_movie(movie):
     if movie.a is None:
         return
 
-    imdb_id = search_imdb(movie.a.get('title'))
+    imdb_id = search_imdb(movie.a.get("title"))
     tamilyogi_id = None
     if imdb_id is None:
         tamilyogi_id = f"ty{uuid4().fields[-1]}"
     else:
         imdb_id = f"tt{imdb_id}"
 
-    data = re.search(r"^(.+\(\d{4}\))", movie.a.get('title'))
+    data = re.search(r"^(.+\(\d{4}\))", movie.a.get("title"))
     try:
         name = data[1].strip()
     except TypeError:
-        name = movie.a.get('title')
+        name = movie.a.get("title")
 
     print(f"parsed movie data: {name}")
 
@@ -69,41 +74,95 @@ def parse_movie(movie):
         "name": name,
         "imdb_id": imdb_id,
         "tamilyogi_id": tamilyogi_id,
-        "link": movie.a.get('href'),
-        "poster": f"https://external-content.duckduckgo.com/iu/?u={parse.quote_plus(movie.a.img.get('src'))}&f=1&nofb=1"
+        "link": movie.a.get("href"),
+        "poster": movie.a.img.get("src"),
     }
 
 
-def scrap_stream(movie_url):
+def scrap_stream_v2(movie_url):
     stream_data = []
-    r = requests.get(movie_url)
-    soup = BeautifulSoup(r.content, "html.parser")
+    response = requests.get(
+        movie_url,
+        headers=request_headers,
+    )
+    soup = BeautifulSoup(response.content, "html.parser")
     iframe = soup.find("iframe")
-    if not iframe:
+    if not (search_param := re.search(r"([a-z0-9]+)\.html", iframe.get("src"))):
         return stream_data
 
-    result = requests.get(iframe.get("src"), headers={
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/90.0.4430.91 Mobile Safari/537.36'
-    })
+    param = search_param[1]
+    url_parser = urlparse(iframe.get("src"))
+
+    embedded_url = f"{url_parser.scheme}://{url_parser.netloc}/embed-{param}.html"
+
+    result = requests.get(
+        embedded_url,
+        headers=request_headers,
+    )
+    if result.status_code != 200:
+        return stream_data
+
     soup = BeautifulSoup(result.content, "html.parser")
+
     download_links = soup.find_all("a", class_="download_links")
     if not download_links:
         return stream_data
 
     for link in download_links:
-        stream_data.append({
-            "title": link.text,
-            "externalUrl": link.get("href"),
-            "behaviorHints": {"notWebReady": True}
-        })
+        stream_data.append({"title": link.text, "url": link.get("href")})
+    return stream_data
+
+
+def scrap_stream(movie_url):
+    stream_data = []
+    response = requests.get(
+        movie_url,
+        headers=request_headers,
+    )
+    soup = BeautifulSoup(response.content, "html.parser")
+    iframe = soup.find("iframe")
+    if not iframe:
+        return stream_data
+
+    result = requests.get(
+        iframe.get("src"),
+        headers=request_headers,
+    )
+    soup = BeautifulSoup(result.content, "html.parser")
+    embedded_link_a = soup.find("a", class_="download_links")
+    if not embedded_link_a:
+        return stream_data
+    embedded_link = embedded_link_a.get("onclick").split("'")[1]
+
+    result = requests.get(
+        embedded_link,
+        headers=request_headers,
+    )
+    soup = BeautifulSoup(result.content, "html.parser")
+
+    iframe = soup.find("iframe")
+    if not iframe:
+        return stream_data
+
+    result = requests.get(
+        iframe.get("src") + embedded_link.split("?")[1] + ".html",
+        headers=request_headers,
+    )
+    soup = BeautifulSoup(result.content, "html.parser")
+
+    download_links = soup.find_all("a", class_="download_links")
+    if not download_links:
+        return stream_data
+
+    for link in download_links:
+        stream_data.append({"title": link.text, "url": link.get("href")})
     return stream_data
 
 
 async def scrap_movies(catalog, url=None):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
-    movies_list = soup.find('ul', id='loop').find_all('li')
+    movies_list = soup.find("ul", id="loop").find_all("li")
     with ThreadPoolExecutor() as executor:
         result = executor.map(parse_movie, movies_list)
 
@@ -118,11 +177,6 @@ async def scrap_movies(catalog, url=None):
             pass
 
 
-def get_movie_rating(movie_id):
-    movie = ia.get_movie(movie_id)
-    return movie.get("rating")
-
-
 async def run_scrape(catalog, pages):
     await database.init()
     for page in range(pages, 0, -1):
@@ -131,7 +185,7 @@ async def run_scrape(catalog, pages):
         await scrap_movies(catalog, link)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scrap Movie metadata from TamilYogi")
     parser.add_argument("-c", "--movie-catalog", help="scrap movie catalog", default="tamil_hd")
     parser.add_argument("-p", "--pages", type=int, default=1, help="number of scrap pages")

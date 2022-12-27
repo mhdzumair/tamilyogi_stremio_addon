@@ -8,8 +8,13 @@ from models import TamilYogiMovie
 async def get_movies_meta(catalog: str, skip: int = 0, limit: int = 25):
     movies_meta = []
 
-    movies = await TamilYogiMovie.find(TamilYogiMovie.catalog == catalog).sort("-created_at").skip(skip).limit(
-            limit).to_list()
+    movies = (
+        await TamilYogiMovie.find(TamilYogiMovie.catalog == catalog)
+        .sort("-created_at")
+        .skip(skip)
+        .limit(limit)
+        .to_list()
+    )
 
     for movie in movies:
         meta_data = schemas.Meta.parse_obj(movie)
@@ -33,6 +38,10 @@ async def get_movie_streams(video_id: str):
     if not movie_data:
         return []
 
+    stream_data = scrap.scrap_stream_v2(movie_data.link)
+    if stream_data:
+        return stream_data
+
     return scrap.scrap_stream(movie_data.link)
 
 
@@ -47,6 +56,6 @@ async def get_movie_meta(meta_id: str):
             "type": "movie",
             "name": movie_data.name,
             "poster": movie_data.poster,
-            "background": movie_data.poster
+            "background": movie_data.poster,
         }
     }
