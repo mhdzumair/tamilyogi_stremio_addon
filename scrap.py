@@ -18,8 +18,8 @@ import models
 ia = Cinemagoer()
 
 tamil_yogi_urls = {
-    "tamil_hd": "https://tamilyogi.plus/category/tamilyogi-bluray-movies/" and "https://tamilyogi.run/tamil-hd-movies/",
-    "tamil_new": "https://tamilyogi.plus/category/tamilyogi-full-movie-online/" and "https://tamilyogi.run/tamilyogi-tamil-new-movies/",
+    "tamil_hd": "https://tamilyogi.run/tamil-hd-movies/",
+    "tamil_new": "https://tamilyogi.run/tamilyogi-tamil-new-movies/",
     "tamil_dubbed": "https://tamilyogi.run/tamilyogi-tamil-web-series-one/",
 }
 
